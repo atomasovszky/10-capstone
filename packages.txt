@@ -4,3 +4,4 @@ purrr
 magrittr
 glue
 rmarkdown
+tidytext

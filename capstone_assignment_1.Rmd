@@ -1,0 +1,86 @@
+---
+title: "Capstone Assignment 1"
+author: "atomasovszky"
+date: "2020-11-20"
+output: html_document
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+source("global.R")
+```
+
+```{r read, cache = TRUE}
+if (!file.exists("data/corpus.csv")) {
+    locales <- list.files("data/final")
+
+    corpus <- map_dfr(locales, ~{
+        locale <- .x
+        files <- list.files(glue("data/final/{locale}"), full.names = TRUE)
+        map_dfr(files, ~{
+            data.table(
+                locale = locale,
+                file = .x,
+                text = readLines(.x)
+            )
+        })
+    }) %>%
+    .[, `:=`(
+        n_word = nchar(gsub("[^\\s]", "", text, perl = TRUE)) + 1,
+        source = gsub(".*\\.(.*)\\.txt", "\\1", file)
+    )]
+
+    fwrite(corpus, "data/corpus.csv")
+} else {
+    corpus <- fread("data/corpus.csv")
+}
+```
+
+### Overview
+This report aims to summarize the training data set that is to be used in the Data Science Specialization Capstone project for a NLP prediction model.
+
+The training data consists of a corpus with text in `r corpus[, uniqueN(locale)]` languages coming from 3 files each.
+It has `r prettyNum(nrow(corpus), big.mark = ",")` records in total.
+These records contain text with `r prettyNum(corpus[, sum(n_word)], big.mark = ",")` words.
+
+### Summary of files
+```{r summary_table, warning = FALSE, message = FALSE}
+corpus[,
+    .(
+        n_lines = .N,
+        total_n_word = sum(n_word),
+        min_n_word = min(n_word),
+        max_n_word = max(n_word),
+        avg_n_word = mean(n_word)
+    ),
+    keyby = .(locale, file)
+] %>% knitr::kable()
+```
+
+### Summary of languages in the corpus
+
+```{r boxplot_by_locale, warning = FALSE, message = FALSE}
+ggplot(corpus, aes(locale, n_word)) +
+    geom_boxplot(alpha = .75) +
+    scale_y_log10() +
+    labs(
+        title = "Distribution of word counts in the corpus by locale",
+        x = "", y = "Word count (log10 scale)"
+    )
+```
+
+```{r boxplot_by_source, warning = FALSE, message = FALSE}
+ggplot(corpus, aes(source, n_word)) +
+    geom_boxplot(alpha = .75) +
+    scale_y_log10() +
+    labs(
+        title = "Distribution of word counts in the corpus by source",
+        x = "", y = "Word count (log10 scale)"
+    )
+```
+
+There's not much of a difference in word counts across languages and sources.
+Not surprisingly twitter seems to have the lowest word count and also the lowest dispersion among the sources.
+
+
+
