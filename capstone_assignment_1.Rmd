@@ -36,7 +36,7 @@ if (!file.exists("data/corpus.csv")) {
 }
 ```
 
-### Overview
+## Overview
 This report aims to summarize the training data set that is to be used in the Data Science Specialization Capstone project for a NLP prediction model.
 
 The training data consists of a corpus with text in `r corpus[, uniqueN(locale)]` languages coming from 3 files each.
@@ -83,4 +83,4 @@ There's not much of a difference in word counts across languages and sources.
 Not surprisingly twitter seems to have the lowest word count and also the lowest dispersion among the sources.
 
 
-
+## Summary of N-grams
